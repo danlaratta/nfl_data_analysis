@@ -1,6 +1,7 @@
 import requests
 import os
 from .exception import ApiRequestException
+from typing import Any
 
 
 class ApiService:
@@ -15,7 +16,7 @@ class ApiService:
         
 
     # Fetch NFL data
-    def fetch_nfl_data(self, season_year: int):
+    def fetch_nfl_data(self, season_year: int) -> dict[str, Any]:
         # Request data from api
         try:
             response = requests.get(
