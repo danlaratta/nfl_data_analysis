@@ -9,5 +9,5 @@ CREATE TABLE IF NOT EXISTS games (
     game_type           game_season NOT NULL,
     season_week         INT NOT NULL,
     game_date_time      DATE NOT NULL,
-    attendance          INT NOT NULL,
+    attendance          INT NOT NULL
 );

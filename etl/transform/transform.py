@@ -60,10 +60,8 @@ def transform_team(events: list[dict[str, Any]]) -> pd.DataFrame:
     teams_df: pd.DataFrame = pd.DataFrame(teams_data)
 
     # Drop duplicate teams - teams_data contains teams for all games, each team will be duplicated for X number of weeks
-    teams_df = teams_df.drop_duplicates(subset=[]).reset_index(drop=True)
+    teams_df = teams_df.drop_duplicates(subset=['team_id']).reset_index(drop=True)
     return teams_df
-                 
-
 
 
 # Transform games json into dataframe
@@ -82,7 +80,7 @@ def transform_games(events: list[dict[str, Any]]):
 
         for comp in event.get('competitions', {}):
             # Get game ID and attendance
-            game_id = comp.get()
+            game_id = comp.get('id')
             attendance: str = comp.get('attendance')
 
             # Create the rows for game data where each row represents a game
@@ -100,21 +98,57 @@ def transform_games(events: list[dict[str, Any]]):
     return games_df
                  
 
-
-
-
-
-
-
-
 # Transform players json into dataframe
 def transform_players(events: list[dict[str, Any]]):
-    pass
+    players_data: list[dict[str, Any]] = []
 
+    for event in events:
+        for leaders_outer in event.get('leaders', []):
+            for leaders in leaders_outer.get('leaders', []):
+                for player in leaders:
+                    player_id = player.get('id')
+                    name = player.get('fullname')
+                    jersey = player.get('jersey')
+                    position = player.get('position', {}).get('abbreviation')
+
+                    player_row: dict[str, Any] = {
+                        'player_id': player_id,
+                        'player_name': name,
+                        'jersey': jersey,
+                        'position': position,
+                    }
+                    players_data.append(player_row)
+    
+    player_df: pd.DataFrame = pd.DataFrame(players_data)
+
+    # Drop duplicate players - if they were a game leader in multiple games there will be duplicates
+    player_df = player_df.drop_duplicates(subset=['play_id']).reset_index(drop=True)
+    return player_df
+            
 
 # Transform team game stats json into dataframe
 def transform_team_game_stats(events: list[dict[str, Any]]):
-    pass
+    team_stats_data: list[dict[str, Any]] = []
+
+    for event in events:
+        for comp in event.get('competitions', []):
+            game_id = comp.get('id')
+
+            for competitor in comp.get('competitors', []):
+                team_id = competitor.get('team', {}).get('id')
+                winner = competitor.get('winner')
+                points_scored = competitor.get('score')
+
+                team_stat_row: dict[str, Any] = {
+                    'team_id': team_id,
+                    'game_id': game_id,
+                    'winner': winner,
+                    'points_scored': points_scored
+                }
+                team_stats_data.append(team_stat_row)
+
+    team_stats_df: pd.DataFrame = pd.DataFrame(team_stats_data)
+    return team_stats_df
 
 
 # Transform game leaders json into dataframe
