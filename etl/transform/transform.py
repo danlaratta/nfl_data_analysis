@@ -27,8 +27,41 @@ def filter_season_events(json_data: dict[str, Any], season_year: int) -> dict[st
 
 
 # Transform team json into dataframe
-def transform_team():
-    pass
+def transform_team(events: dict[str, Any]) -> pd.DataFrame:
+    # List of extracted team data for each game each week
+    teams_data: list[dict[str, Any]] = []
+
+    # Iterate through json layers to extract the team data for games for each week
+    for event in events:
+        for comp in events.get('competitions', []):
+            for competitor in comp.get('competitors', []):
+                # Get the team key's values
+                team = competitor.get('team', {})
+
+                # Loop through records and storing them in dictionary (home, away, and overall records)
+                records = { rec['name'].title: rec['summary'] for rec in competitor.get('records', {})}
+                
+                # Creates the rows for team data where each row represents a team
+                team_row: dict[str, Any] = {
+                    'team_id': int(team.get(id)),
+                    'team_name': team.get('name'),
+                    'abbreviation': team.get('abbreviation'),
+                    'city': team.get('location'),
+                    'home_or_away': competitor.get('homeAway'),
+                    'home_record': records.get('Home'),
+                    'away_record': records.get('Road'),
+                    'overall_record': records.get('Overall')
+                }
+                teams_data.append(team_row)
+    
+    # Convert teams data into a dataframe
+    teams_df: pd.DataFrame = pd.DataFrame(teams_data)
+
+    # Drop duplicate teams - teams_data contains teams for all games, each team will be duplicated for X number of weeks
+    teams_df = teams_df.drop_duplicates(subset=[]).reset_index(drop=True)
+    return teams_df
+                 
+
 
 
 # Transform games json into dataframe
