@@ -257,4 +257,5 @@ def transform_stadium(events: list[dict[str, Any]]):
             stadium_data.append(stadium_row)
 
     stadium_df: pd.DataFrame = pd.DataFrame(stadium_data)
+    stadium_df = stadium_df.drop_duplicates(subset=['stadium_id']).reset_index(drop=True)
     return stadium_df
