@@ -2,8 +2,7 @@ import pandas as pd
 from pathlib import Path
 import json
 from typing import Any
-from datetime import datetime
-from enums import GameType
+from datetime import datetime, timezone
 
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
@@ -72,8 +71,11 @@ def transform_games(events: list[dict[str, Any]]):
 
     # Iterate through json layers to extract the game data for each game for each week
     for event in events:
-        # Get date, split into date and time, 
-        date_time = event.get('date')
+        raw_date = event.get('date')
+        if raw_date:
+            date_time = datetime.fromisoformat(raw_date).astimezone(timezone.utc)
+        else:
+            date_time = None
 
         # Get game type and season week 
         game_type = event.get('season', {}).get('slug')
