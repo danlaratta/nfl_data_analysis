@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 from typing import Any
 from datetime import datetime
+from enums import GameType
 
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
@@ -45,8 +46,8 @@ def transform_team(events: list[dict[str, Any]]) -> pd.DataFrame:
                 
                 # Create the rows for team data where each row represents a team
                 team_row: dict[str, Any] = {
-                    'team_id': int(team.get(id)),
-                    'team_name': team,
+                    'team_id': int(team.get('id')),
+                    'team_name': team.get('displayName'),
                     'abbreviation': team.get('abbreviation'),
                     'city': team.get('location'),
                     'home_or_away': competitor.get('homeAway'),
@@ -78,14 +79,23 @@ def transform_games(events: list[dict[str, Any]]):
         game_type = event.get('season', {}).get('slug')
         week = event.get('week', {}).get('number')
 
-        for comp in event.get('competitions', {}):
-            # Get game ID and attendance
+        for comp in event.get('competitions', []):
+            # Get game ID, attendance, and stadium ID
             game_id = comp.get('id')
-            attendance: str = comp.get('attendance')
+            attendance = comp.get('attendance')
+            stadium_id = comp.get('venue', {}).get('id')
+
+            # Get home and away team IDs per game
+            competitors = comp.get('competitors', [])
+            home_team_id = next((c.get('team', {}).get('id') for c in competitors if c.get('homeAway') == 'home'))
+            away_team_id = next((c.get('team', {}).get('id') for c in competitors if c.get('homeAway') == 'away'))
 
             # Create the rows for game data where each row represents a game
             game_row: dict[str, Any] = {
                 'game_id': int(game_id),
+                'home_team_id': int(home_team_id),
+                'away_team_id': int(away_team_id),
+                'stadium_id': stadium_id,
                 'game_type': game_type,
                 'season_week': week,
                 'date_time': date_time,
@@ -103,16 +113,21 @@ def transform_players(events: list[dict[str, Any]]):
     players_data: list[dict[str, Any]] = []
 
     for event in events:
+        for comp in event.get('competitions', []):
+            for competitor in comp.get('compeitors', {}):
+                team_id = competitor.get('team', {}).get('id')
+
         for leaders_outer in event.get('leaders', []):
             for leaders in leaders_outer.get('leaders', []):
-                for player in leaders:
-                    player_id = player.get('id')
-                    name = player.get('fullname')
-                    jersey = player.get('jersey')
-                    position = player.get('position', {}).get('abbreviation')
+                for athlete in leaders:
+                    player_id = athlete.get('id')
+                    name = athlete.get('fullname')
+                    jersey = athlete.get('jersey')
+                    position = athlete.get('position', {}).get('abbreviation')
 
                     player_row: dict[str, Any] = {
                         'player_id': player_id,
+                        'team_id': team_id,
                         'player_name': name,
                         'jersey': jersey,
                         'position': position,
@@ -122,7 +137,7 @@ def transform_players(events: list[dict[str, Any]]):
     player_df: pd.DataFrame = pd.DataFrame(players_data)
 
     # Drop duplicate players - if they were a game leader in multiple games there will be duplicates
-    player_df = player_df.drop_duplicates(subset=['play_id']).reset_index(drop=True)
+    player_df = player_df.drop_duplicates(subset=['player_id']).reset_index(drop=True)
     return player_df
             
 
