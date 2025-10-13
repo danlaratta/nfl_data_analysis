@@ -169,9 +169,71 @@ def transform_team_game_stats(events: list[dict[str, Any]]):
 
 
 # Transform game leaders json into dataframe
-def transform_gane_leaders(events: list[dict[str, Any]]):
-    pass
+def transform_game_leaders(events: list[dict[str, Any]]):
+    game_leaders_data: list[dict[str, Any]] = []
 
+    for event in events:
+        for comp in event.get('competitions', []):
+            game_id = int(comp.get('id'))
+
+            for competitor in comp.get('competitors', []):
+                team_id = int(competitor.get('team', {}).get('id'))
+
+            for leaders_outer in comp.get('leaders', []):
+                # Get category name
+                category_name: str = leaders_outer.get('display_name')
+
+                # Get stats for each category that are stored in displayValue and extract each stat for respective column
+                stats: list[str] = leaders_outer.get('displayValue').split(', ')    
+
+                if category_name == 'Passing Leader':                       # Passing Leader sample value: "displayValue": "15/22, 173 YDS, 1 TD, 1 INT"
+                    completions = int(stats[0].split('/')[0])    
+                    incompletions = int(stats[0].split('/')[1])
+                    yards: int = int(stats[1].split(' ')[0])
+
+                    if len(stats) == 4:
+                        touchdowns = int(stats[2].split(' ')[0])
+                        interceptions = int(stats[3].split(' ')[0])
+                    elif len(stats) == 3 and stats[2].split(' ')[1] == 'TD':
+                        touchdowns = int(stats[2].split(' ')[0])
+                    elif len(stats) == 3 and stats[2].split(' ')[1] == 'INT':
+                        interceptions = int(stats[2].split(' ')[0])
+
+                elif category_name == 'Rushing Leader':                     # Rushing Leader sample value: "7 CAR, 67 YDS, 1 TD"
+                    carries = int(stats[0].split(' ')[0])
+                    yards: int = int(stats[1].split(' ')[0])
+
+                    if len(stats) == 3:
+                        touchdowns = int(stats[2].split(' ')[0])
+
+                elif category_name == 'Receiving Leader':                   # Receiving Leader sample value: "2 REC, 56 YDS, 1 TD"
+                    catches = int(stats[0].split(' ')[0])
+                    yards: int = int(stats[1].split(' ')[0])
+
+                    if len(stats) == 3:
+                        touchdowns = int(stats[2].split(' ')[0])                                                       
+
+                for leaders in leaders_outer.get('leaders', []):
+                    for athlete in leaders:
+                        player_id = int(athlete.get('id'))
+                        
+                        game_leaders_row: dict[str, Any] = {
+                            'team_id': team_id,
+                            'game_id': game_id,
+                            'player_id': player_id,
+                            'category_name': category_name,
+                            'yards': yards,
+                            'touchdowns': touchdowns,
+                            'interceptions': interceptions,
+                            'completions': completions,
+                            'incompletions': incompletions,
+                            'carries': carries,
+                            'catches': catches,
+                        }
+                        game_leaders_data.append(game_leaders_row)
+    
+    game_leaders_df: pd.DataFrame = pd.DataFrame(game_leaders_data)
+    return game_leaders_df
 
 # Transform stadium json into dataframe
 def transform_stadium(events: list[dict[str, Any]]):
