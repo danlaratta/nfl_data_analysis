@@ -41,18 +41,21 @@ def transform_team(events: list[dict[str, Any]]) -> pd.DataFrame:
                 team = competitor.get('team', {})
 
                 # Loop through records and storing them in dictionary (home, away, and overall records)
-                records: dict[str, Any] = { rec['name'].title: rec['summary'] for rec in competitor.get('records', {})}
+                records: dict[str, Any] = { rec['name'].title(): rec['summary'] for rec in competitor.get('records', [])}
+                home_wins: int = int(records.get('Home', '0-0').split('-')[0])
+                away_wins: int = int(records.get('Road', '0-0').split('-')[0])
+                overall_record: str = str(records.get('Overall'))
                 
                 # Create the rows for team data where each row represents a team
                 team_row: dict[str, Any] = {
                     'team_id': int(team.get('id')),
-                    'team_name': team.get('displayName'),
-                    'abbreviation': team.get('abbreviation'),
-                    'city': team.get('location'),
-                    'home_or_away': competitor.get('homeAway'),
-                    'home_record': records.get('Home'),
-                    'away_record': records.get('Road'),
-                    'overall_record': records.get('Overall')
+                    'team_name': str(team.get('displayName')),
+                    'abbreviation': str(team.get('abbreviation')),
+                    'city': str(team.get('location')),
+                    'home_or_away': str(competitor.get('homeAway').title()),
+                    'home_wins': home_wins,
+                    'away_wins': away_wins,
+                    'overall_record': overall_record
                 }
                 teams_data.append(team_row)
     
@@ -73,30 +76,28 @@ def transform_games(events: list[dict[str, Any]]):
     for event in events:
         raw_date = event.get('date')
         if raw_date:
-            date_time = datetime.fromisoformat(raw_date).astimezone(timezone.utc)
-        else:
-            date_time = None
+            date_time: datetime = datetime.fromisoformat(raw_date).astimezone(timezone.utc)
 
         # Get game type and season week 
-        game_type = event.get('season', {}).get('slug')
-        week = event.get('week', {}).get('number')
+        game_type: str = str(event.get('season', {}).get('slug'))
+        week: int = int(event.get('week', {}).get('number'))
 
         for comp in event.get('competitions', []):
             # Get game ID, attendance, and stadium ID
-            game_id = comp.get('id')
-            attendance = comp.get('attendance')
-            stadium_id = comp.get('venue', {}).get('id')
+            game_id: int = int(comp.get('id'))
+            attendance: int = int(comp.get('attendance'))
+            stadium_id: int = int(comp.get('venue', {}).get('id'))
 
             # Get home and away team IDs per game
             competitors = comp.get('competitors', [])
-            home_team_id = next((c.get('team', {}).get('id') for c in competitors if c.get('homeAway') == 'home'))
-            away_team_id = next((c.get('team', {}).get('id') for c in competitors if c.get('homeAway') == 'away'))
+            home_team_id: int = int(next((c.get('team', {}).get('id') for c in competitors if c.get('homeAway') == 'home')))
+            away_team_id: int = int(next((c.get('team', {}).get('id') for c in competitors if c.get('homeAway') == 'away')))
 
             # Create the rows for game data where each row represents a game
             game_row: dict[str, Any] = {
-                'game_id': int(game_id),
-                'home_team_id': int(home_team_id),
-                'away_team_id': int(away_team_id),
+                'game_id': game_id,
+                'home_team_id': home_team_id,
+                'away_team_id': away_team_id,
                 'stadium_id': stadium_id,
                 'game_type': game_type,
                 'season_week': week,
@@ -116,16 +117,16 @@ def transform_players(events: list[dict[str, Any]]):
 
     for event in events:
         for comp in event.get('competitions', []):
-            for competitor in comp.get('compeitors', {}):
-                team_id = competitor.get('team', {}).get('id')
+            for competitor in comp.get('competitors', []):
+                team_id: int = int(competitor.get('team', {}).get('id'))
 
         for leaders_outer in event.get('leaders', []):
             for leaders in leaders_outer.get('leaders', []):
                 for athlete in leaders:
-                    player_id = athlete.get('id')
-                    name = athlete.get('fullname')
-                    jersey = athlete.get('jersey')
-                    position = athlete.get('position', {}).get('abbreviation')
+                    player_id: int = int(athlete.get('id'))
+                    name: str = str(athlete.get('fullname'))
+                    jersey: int = int(athlete.get('jersey'))
+                    position: str = str(athlete.get('position', {}).get('abbreviation'))
 
                     player_row: dict[str, Any] = {
                         'player_id': player_id,
@@ -149,12 +150,12 @@ def transform_team_game_stats(events: list[dict[str, Any]]):
 
     for event in events:
         for comp in event.get('competitions', []):
-            game_id = comp.get('id')
+            game_id: int = int(comp.get('id'))
 
             for competitor in comp.get('competitors', []):
-                team_id = competitor.get('team', {}).get('id')
-                winner = competitor.get('winner')
-                points_scored = competitor.get('score')
+                team_id: int = int(competitor.get('team', {}).get('id'))
+                winner: bool = str(competitor.get('winner', '')).lower() == 'true'
+                points_scored: int = int(competitor.get('score'))
 
                 team_stat_row: dict[str, Any] = {
                     'team_id': team_id,
@@ -174,10 +175,10 @@ def transform_game_leaders(events: list[dict[str, Any]]):
 
     for event in events:
         for comp in event.get('competitions', []):
-            game_id = int(comp.get('id'))
+            game_id: int = int(comp.get('id'))
 
             for competitor in comp.get('competitors', []):
-                team_id = int(competitor.get('team', {}).get('id'))
+                team_id: int = int(competitor.get('team', {}).get('id'))
 
             for leaders_outer in comp.get('leaders', []):
                 # Get category name
@@ -187,35 +188,35 @@ def transform_game_leaders(events: list[dict[str, Any]]):
                 stats: list[str] = leaders_outer.get('displayValue').split(', ')    
 
                 if category_name == 'Passing Leader':                       # Passing Leader sample value: "displayValue": "15/22, 173 YDS, 1 TD, 1 INT"
-                    completions = int(stats[0].split('/')[0])    
-                    incompletions = int(stats[0].split('/')[1])
+                    completions: int = int(stats[0].split('/')[0])    
+                    incompletions: int = int(stats[0].split('/')[1])
                     yards: int = int(stats[1].split(' ')[0])
 
                     if len(stats) == 4:
-                        touchdowns = int(stats[2].split(' ')[0])
-                        interceptions = int(stats[3].split(' ')[0])
+                        touchdowns: int = int(stats[2].split(' ')[0])
+                        interceptions: int = int(stats[3].split(' ')[0])
                     elif len(stats) == 3 and stats[2].split(' ')[1] == 'TD':
-                        touchdowns = int(stats[2].split(' ')[0])
+                        touchdowns: int = int(stats[2].split(' ')[0])
                     elif len(stats) == 3 and stats[2].split(' ')[1] == 'INT':
-                        interceptions = int(stats[2].split(' ')[0])
+                        interceptions: int = int(stats[2].split(' ')[0])
 
                 elif category_name == 'Rushing Leader':                     # Rushing Leader sample value: "7 CAR, 67 YDS, 1 TD"
-                    carries = int(stats[0].split(' ')[0])
+                    carries: int = int(stats[0].split(' ')[0])
                     yards: int = int(stats[1].split(' ')[0])
 
                     if len(stats) == 3:
-                        touchdowns = int(stats[2].split(' ')[0])
+                        touchdowns: int = int(stats[2].split(' ')[0])
 
                 elif category_name == 'Receiving Leader':                   # Receiving Leader sample value: "2 REC, 56 YDS, 1 TD"
-                    catches = int(stats[0].split(' ')[0])
+                    catches: int = int(stats[0].split(' ')[0])
                     yards: int = int(stats[1].split(' ')[0])
 
                     if len(stats) == 3:
-                        touchdowns = int(stats[2].split(' ')[0])                                                       
+                        touchdowns: int = int(stats[2].split(' ')[0])                                                       
 
                 for leaders in leaders_outer.get('leaders', []):
                     for athlete in leaders:
-                        player_id = int(athlete.get('id'))
+                        player_id: int = int(athlete.get('id'))
                         
                         game_leaders_row: dict[str, Any] = {
                             'team_id': team_id,
@@ -234,6 +235,7 @@ def transform_game_leaders(events: list[dict[str, Any]]):
     
     game_leaders_df: pd.DataFrame = pd.DataFrame(game_leaders_data)
     return game_leaders_df
+
 
 # Transform stadium json into dataframe
 def transform_stadium(events: list[dict[str, Any]]):
