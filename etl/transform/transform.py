@@ -1,31 +1,6 @@
 import pandas as pd
-from pathlib import Path
-import json
 from typing import Any
 from datetime import datetime, timezone
-
-
-ROOT_DIR = Path(__file__).resolve().parents[2]
-RAW_DATA_DIR = ROOT_DIR / 'data' / 'raw'
-RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
-
-
-# Transform Json - filter for just current season's data
-def filter_season_events(json_data: dict[str, Any], season_year: int) -> dict[str, Any]:
-    # Get all events (games)
-    events: list[dict[str, Any]] = json_data.get('events', [])
-
-    # Filter for current season's events (games)
-    filtered_events: list[dict[str, Any]]  = [e for e in events if e.get('season', {}).get('year', {}) == season_year]
-
-    # Save copy of filtered raw data
-    file_path = RAW_DATA_DIR / f'nfl_filtered_raw_{season_year}.json'
-
-    with open(file_path, 'w', encoding='utf-8') as f:
-        json.dump(filtered_events, f, ensure_ascii=False, indent=4)
-    print(f'Saving to: {file_path.resolve()}') 
-
-    return { 'events': filtered_events }
 
 
 # Transform team json into dataframe
@@ -52,7 +27,7 @@ def transform_team(events: list[dict[str, Any]]) -> pd.DataFrame:
                     'team_name': str(team.get('displayName')),
                     'abbreviation': str(team.get('abbreviation')),
                     'city': str(team.get('location')),
-                    'home_or_away': str(competitor.get('homeAway').title()),
+                    'home_or_away': str(competitor.get('homeAway', '').title()),
                     'home_wins': home_wins,
                     'away_wins': away_wins,
                     'overall_record': overall_record
@@ -68,7 +43,7 @@ def transform_team(events: list[dict[str, Any]]) -> pd.DataFrame:
 
 
 # Transform games json into dataframe
-def transform_games(events: list[dict[str, Any]]):
+def transform_games(events: list[dict[str, Any]]) -> pd.DataFrame:
     # Initialize empty List of extracted game data for each game each week
     games_data: list[dict[str, Any]] = []
 
@@ -112,21 +87,18 @@ def transform_games(events: list[dict[str, Any]]):
                  
 
 # Transform players json into dataframe
-def transform_players(events: list[dict[str, Any]]):
+def transform_players(events: list[dict[str, Any]]) -> pd.DataFrame:
     players_data: list[dict[str, Any]] = []
 
     for event in events:
         for comp in event.get('competitions', []):
-            for competitor in comp.get('competitors', []):
-                team_id: int = int(competitor.get('team', {}).get('id'))
-
-        for leaders_outer in event.get('leaders', []):
-            for leaders in leaders_outer.get('leaders', []):
-                for athlete in leaders:
-                    player_id: int = int(athlete.get('id'))
-                    name: str = str(athlete.get('fullname'))
-                    jersey: int = int(athlete.get('jersey'))
-                    position: str = str(athlete.get('position', {}).get('abbreviation'))
+            for leaders in comp.get('leaders', []):
+                for leader in leaders.get('leaders', []):
+                    player_id: int = int(leader.get('athlete', {}).get('id'))
+                    team_id: int = int(leader.get('athlete', {}).get('team', {}).get('id'))
+                    name: str = str(leader.get('athlete', {}).get('fullName'))
+                    jersey: int = int(leader.get('athlete', {}).get('jersey'))
+                    position: str = str(leader.get('athlete', {}).get('position', {}).get('abbreviation'))
 
                     player_row: dict[str, Any] = {
                         'player_id': player_id,
@@ -145,7 +117,7 @@ def transform_players(events: list[dict[str, Any]]):
             
 
 # Transform team game stats json into dataframe
-def transform_team_game_stats(events: list[dict[str, Any]]):
+def transform_team_game_stats(events: list[dict[str, Any]]) -> pd.DataFrame:
     team_stats_data: list[dict[str, Any]] = []
 
     for event in events:
@@ -170,75 +142,81 @@ def transform_team_game_stats(events: list[dict[str, Any]]):
 
 
 # Transform game leaders json into dataframe
-def transform_game_leaders(events: list[dict[str, Any]]):
+def transform_game_leaders(events: list[dict[str, Any]]) -> pd.DataFrame:
     game_leaders_data: list[dict[str, Any]] = []
 
     for event in events:
         for comp in event.get('competitions', []):
             game_id: int = int(comp.get('id'))
 
-            for competitor in comp.get('competitors', []):
-                team_id: int = int(competitor.get('team', {}).get('id'))
-
-            for leaders_outer in comp.get('leaders', []):
+            for leaders in comp.get('leaders', []):
                 # Get category name
-                category_name: str = leaders_outer.get('display_name')
+                category_name: str = leaders.get('displayName')
 
-                # Get stats for each category that are stored in displayValue and extract each stat for respective column
-                stats: list[str] = leaders_outer.get('displayValue').split(', ')    
+                for leader in leaders.get('leaders', []):
+                    # Get stats for each category that are stored in displayValue and extract each stat for respective column
+                    stats: list[str] = leader.get('displayValue', '').split(', ') 
+                    
+                    yards = 0
+                    completions = 0
+                    incompletions = 0
+                    touchdowns = 0
+                    interceptions = 0
+                    carries = 0
+                    catches = 0
 
-                if category_name == 'Passing Leader':                       # Passing Leader sample value: "displayValue": "15/22, 173 YDS, 1 TD, 1 INT"
-                    completions: int = int(stats[0].split('/')[0])    
-                    incompletions: int = int(stats[0].split('/')[1])
-                    yards: int = int(stats[1].split(' ')[0])
+                    if category_name == 'Passing Leader':                       # Passing Leader sample value: "displayValue": "15/22, 173 YDS, 1 TD, 1 INT"
+                        completions: int = int(stats[0].split('/')[0])    
+                        incompletions: int = int(stats[0].split('/')[1])
+                        yards: int = int(stats[1].split(' ')[0])
 
-                    if len(stats) == 4:
-                        touchdowns: int = int(stats[2].split(' ')[0])
-                        interceptions: int = int(stats[3].split(' ')[0])
-                    elif len(stats) == 3 and stats[2].split(' ')[1] == 'TD':
-                        touchdowns: int = int(stats[2].split(' ')[0])
-                    elif len(stats) == 3 and stats[2].split(' ')[1] == 'INT':
-                        interceptions: int = int(stats[2].split(' ')[0])
+                        if len(stats) == 4:
+                            touchdowns: int = int(stats[2].split(' ')[0])
+                            interceptions: int = int(stats[3].split(' ')[0])
+                        elif len(stats) == 3 and stats[2].split(' ')[1] == 'TD':
+                            touchdowns: int = int(stats[2].split(' ')[0])
+                        elif len(stats) == 3 and stats[2].split(' ')[1] == 'INT':
+                            interceptions: int = int(stats[2].split(' ')[0])
 
-                elif category_name == 'Rushing Leader':                     # Rushing Leader sample value: "7 CAR, 67 YDS, 1 TD"
-                    carries: int = int(stats[0].split(' ')[0])
-                    yards: int = int(stats[1].split(' ')[0])
+                    elif category_name == 'Rushing Leader':                     # Rushing Leader sample value: "7 CAR, 67 YDS, 1 TD"
+                        carries: int = int(stats[0].split(' ')[0])
+                        yards: int = int(stats[1].split(' ')[0])
 
-                    if len(stats) == 3:
-                        touchdowns: int = int(stats[2].split(' ')[0])
+                        if len(stats) == 3:
+                            touchdowns: int = int(stats[2].split(' ')[0])
 
-                elif category_name == 'Receiving Leader':                   # Receiving Leader sample value: "2 REC, 56 YDS, 1 TD"
-                    catches: int = int(stats[0].split(' ')[0])
-                    yards: int = int(stats[1].split(' ')[0])
+                    elif category_name == 'Receiving Leader':                   # Receiving Leader sample value: "2 REC, 56 YDS, 1 TD"
+                        catches: int = int(stats[0].split(' ')[0])
+                        yards: int = int(stats[1].split(' ')[0])
 
-                    if len(stats) == 3:
-                        touchdowns: int = int(stats[2].split(' ')[0])                                                       
+                        if len(stats) == 3:
+                            touchdowns: int = int(stats[2].split(' ')[0]) 
 
-                for leaders in leaders_outer.get('leaders', []):
-                    for athlete in leaders:
-                        player_id: int = int(athlete.get('id'))
-                        
-                        game_leaders_row: dict[str, Any] = {
-                            'team_id': team_id,
-                            'game_id': game_id,
-                            'player_id': player_id,
-                            'category_name': category_name,
-                            'yards': yards,
-                            'touchdowns': touchdowns,
-                            'interceptions': interceptions,
-                            'completions': completions,
-                            'incompletions': incompletions,
-                            'carries': carries,
-                            'catches': catches,
-                        }
-                        game_leaders_data.append(game_leaders_row)
+
+                    player_id: int = int(leader.get('athlete', {}).get('id', 0))
+                    team_id: int = int(leader.get('athlete', {}).get('team', {}).get('id'))
+                    
+                    game_leaders_row: dict[str, Any] = {
+                        'team_id': team_id,
+                        'game_id': game_id,
+                        'player_id': player_id,
+                        'category_name': category_name,
+                        'yards': yards,
+                        'touchdowns': touchdowns,
+                        'interceptions': interceptions,
+                        'completions': completions,
+                        'incompletions': incompletions,
+                        'carries': carries,
+                        'catches': catches,
+                    }
+                    game_leaders_data.append(game_leaders_row)
     
     game_leaders_df: pd.DataFrame = pd.DataFrame(game_leaders_data)
     return game_leaders_df
 
 
 # Transform stadium json into dataframe
-def transform_stadium(events: list[dict[str, Any]]):
+def transform_stadium(events: list[dict[str, Any]]) -> pd.DataFrame:
     stadium_data: list[dict[str, Any]] = []
     for event in events:
         for comp in event.get('competitions', []):
