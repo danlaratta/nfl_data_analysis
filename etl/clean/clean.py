@@ -7,23 +7,22 @@ def clean_team(df: pd.DataFrame) -> pd.DataFrame:
     team_df: pd.DataFrame = df.copy()
 
     # Fix incorrect Team IDs
-    df['team_id'] = df['team_id'].replace({33: 31, 34: 32})     # Raven's ID: 33 --> 31 | Texan's ID: 34 --> 32
+    team_df['team_id'] = team_df['team_id'].replace({33: 31, 34: 32})     # Raven's ID: 33 --> 31 | Texan's ID: 34 --> 32
 
-    # Sort the df
-    team_df = df.sort_values(by='team_id').reset_index(drop=True)
+    # Sort and return
+    return team_df.sort_values(by='team_name').reset_index(drop=True)
 
-    return team_df
 
 
 
 def clean_games(df: pd.DataFrame) -> pd.DataFrame:
     games_df = df.copy()
     return games_df.sort_values(by='game_id').reset_index(drop=True)
-    
 
 
-def clean_players(df: pd.DataFrame) -> None:
-    pass
+def clean_players(df: pd.DataFrame) -> pd.DataFrame:
+    players_df: pd.DataFrame = df.copy()
+    return players_df.sort_values(by='player_name').reset_index(drop=True)
 
 
 def clean_team_game_stats(df: pd.DataFrame) -> pd.DataFrame:
@@ -36,5 +35,10 @@ def clean_game_leaders(df: pd.DataFrame) -> pd.DataFrame:
     return leaders_df.sort_values(by='game_id').reset_index(drop=True)
 
 
-def clean_stadium(df: pd.DataFrame) -> None:
-    pass
+
+def clean_stadium(df: pd.DataFrame) -> pd.DataFrame:
+    stadium_df: pd.DataFrame = df.copy()
+    stadium_df.loc[stadium_df['stadium_country'] != 'USA', 'stadium_state'] = 'INTL'    # Set stadium_state to INTL (International) for games outside of USA
+    return stadium_df.sort_values(by='stadium_name').reset_index(drop=True)
+
+    

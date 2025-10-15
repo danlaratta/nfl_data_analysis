@@ -226,12 +226,14 @@ def transform_stadium(events: list[dict[str, Any]]) -> pd.DataFrame:
             stadium_name: str = venue.get('fullName')
             stadium_city: str = venue.get('address', {}).get('city')
             stadium_state: str = venue.get('address', {}).get('state')
+            stadium_country: str = venue.get('address', {}).get('country')
 
             stadium_row: dict[str, Any] = {
                 'stadium_id': stadium_id,
                 'stadium_name': stadium_name,
                 'stadium_city': stadium_city,
                 'stadium_state': stadium_state,
+                'stadium_country': stadium_country,
             }
             stadium_data.append(stadium_row)
 
