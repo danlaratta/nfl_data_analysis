@@ -17,9 +17,9 @@ def main():
 
 
     # # Transform
-    utils = TransformUtils(2025, 6)
-    season_games: dict[str, Any] = utils.filter_season_events(json)
-    week_one: dict[str, Any] = utils.filter_season_week(season_games)
+    # utils = TransformUtils(2025, 6)
+    # season_games: dict[str, Any] = utils.filter_season_events(json)
+    # week_one: dict[str, Any] = utils.filter_season_week(season_games)
     
     # utils.save_raw_data(season_games)
 

@@ -16,9 +16,10 @@ def transform_team(events: list[dict[str, Any]]) -> pd.DataFrame:
                 team = competitor.get('team', {})
 
                 # Loop through records and storing them in dictionary (home, away, and overall records)
-                records: dict[str, Any] = { rec['name'].title(): rec['summary'] for rec in competitor.get('records', [])}
-                home_wins: int = int(records.get('Home', '0-0').split('-')[0])
-                away_wins: int = int(records.get('Road', '0-0').split('-')[0])
+                records_list = competitor.get('records', []) or []
+                records: dict[str, Any] = { rec['name'].title(): rec['summary'] for rec in records_list}
+                home_wins: int = int(records.get('Home', 0).split('-')[0])
+                away_wins: int = int(records.get('Road', 0).split('-')[0])
                 overall_record: str = str(records.get('Overall'))
                 
                 # Create the rows for team data where each row represents a team
