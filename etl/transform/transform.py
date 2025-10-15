@@ -11,6 +11,9 @@ def transform_team(events: list[dict[str, Any]]) -> pd.DataFrame:
     # Iterate through json layers to extract the team data for games for each week
     for event in events:
         for comp in event.get('competitions', []):
+            venue = comp.get('venue')
+            stadium_id: int = int(venue.get('id'))
+
             for competitor in comp.get('competitors', []):
                 # Get the team key's values
                 team = competitor.get('team', {})
@@ -33,6 +36,11 @@ def transform_team(events: list[dict[str, Any]]) -> pd.DataFrame:
                     'away_wins': away_wins,
                     'overall_record': overall_record
                 }
+
+                # Assign stadium_id for the home team
+                if team_row['home_or_away'] == 'Home' and stadium_id:
+                    team_row['stadium_id'] = stadium_id
+
                 teams_data.append(team_row)
     
     # Convert teams data into a dataframe

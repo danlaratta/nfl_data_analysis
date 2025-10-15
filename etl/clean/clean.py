@@ -9,10 +9,12 @@ def clean_team(df: pd.DataFrame) -> pd.DataFrame:
     # Fix incorrect Team IDs
     team_df['team_id'] = team_df['team_id'].replace({33: 31, 34: 32})     # Raven's ID: 33 --> 31 | Texan's ID: 34 --> 32
 
+    # Fill away team stadium_ids with 0 
+    team_df.loc[team_df['stadium_id'].isna(), 'stadium_id'] = 0
+    team_df['stadium_id'] = team_df['stadium_id'].astype(int)
+
     # Sort and return
     return team_df.sort_values(by='team_name').reset_index(drop=True)
-
-
 
 
 def clean_games(df: pd.DataFrame) -> pd.DataFrame:
@@ -33,7 +35,6 @@ def clean_team_game_stats(df: pd.DataFrame) -> pd.DataFrame:
 def clean_game_leaders(df: pd.DataFrame) -> pd.DataFrame:
     leaders_df = df.copy()
     return leaders_df.sort_values(by='game_id').reset_index(drop=True)
-
 
 
 def clean_stadium(df: pd.DataFrame) -> pd.DataFrame:
