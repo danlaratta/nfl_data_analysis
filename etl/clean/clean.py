@@ -19,7 +19,7 @@ def clean_team(df: pd.DataFrame) -> pd.DataFrame:
 
 def clean_games(df: pd.DataFrame) -> pd.DataFrame:
     games_df = df.copy()
-    return games_df.sort_values(by='game_id').reset_index(drop=True)
+    return games_df.sort_values(by=['season_week', 'game_id']).reset_index(drop=True)
 
 
 def clean_players(df: pd.DataFrame) -> pd.DataFrame:
