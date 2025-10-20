@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 
 # Transform team json into dataframe
-def transform_team(events: list[dict[str, Any]], is_bulk_transform: bool) -> pd.DataFrame:
+def transform_teams(events: list[dict[str, Any]], is_bulk_transform: bool) -> pd.DataFrame:
     # Initialize empty List of extracted team data for each game each week
     teams_data: list[dict[str, Any]] = []
 
@@ -250,48 +250,3 @@ def transform_stadium(events: list[dict[str, Any]]) -> pd.DataFrame:
     stadium_df: pd.DataFrame = pd.DataFrame(stadium_data)
     stadium_df = stadium_df.drop_duplicates(subset=['stadium_id']).reset_index(drop=True)
     return stadium_df
-
-
-
-
-# def transform_team(events: list[dict[str, Any]]) -> pd.DataFrame:
-#     # Initialize empty List of extracted team data for each game each week
-#     teams_data: list[dict[str, Any]] = []
-
-#     # Iterate through json layers to extract the team data for games for each week
-#     for event in events:
-#         for comp in event.get('competitions', []):
-#             venue = comp.get('venue')
-#             stadium_id: int = int(venue.get('id'))
-
-#             for competitor in comp.get('competitors', []):
-#                 # Get the team key's values
-#                 team = competitor.get('team', {})
-
-#                 # Loop through records and storing them in dictionary (home, away, and overall records)
-#                 records_list = competitor.get('records', []) or []
-#                 records: dict[str, Any] = { rec['name'].title(): rec['summary'] for rec in records_list}
-#                 home_wins: int = int(records.get('Home', 0).split('-')[0])
-#                 away_wins: int = int(records.get('Road', 0).split('-')[0])
-#                 overall_record: str = str(records.get('Overall'))
-                
-#                 # Create the rows for team data where each row represents a team
-#                 team_row: dict[str, Any] = {
-#                     'team_id': int(team.get('id')),
-#                     'team_name': str(team.get('displayName')),
-#                     'abbreviation': str(team.get('abbreviation')),
-#                     'city': str(team.get('location')),
-#                     'home_or_away': str(competitor.get('homeAway', '').title()),
-#                     'home_wins': home_wins,
-#                     'away_wins': away_wins,
-#                     'overall_record': overall_record
-#                 }
-
-#                 # Assign stadium_id for the home team
-#                 if team_row['home_or_away'] == 'Home' and stadium_id:
-#                     team_row['stadium_id'] = stadium_id
-
-#                 teams_data.append(team_row)
-    
-#     # Convert teams data into a dataframe
-#     teams_df: pd.DataFrame = pd.DataFrame(teams_data)

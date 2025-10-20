@@ -2,7 +2,7 @@
 import pandas as pd
 
 
-def clean_team(df: pd.DataFrame) -> pd.DataFrame:
+def clean_teams(df: pd.DataFrame) -> pd.DataFrame:
     # Copy dataframe
     team_df: pd.DataFrame = df.copy()
 

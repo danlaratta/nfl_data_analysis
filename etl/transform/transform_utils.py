@@ -12,7 +12,7 @@ class TransformUtils:
 
 
     # Filter for current season's weekly data
-    def filter_season_events(self, json_data: dict[str, Any]) -> list[dict[str, Any]]:
+    def filter_season_events(self, json_data: dict[str, Any], is_bulk_upload: bool) -> list[dict[str, Any]]:
         # Get all events (games)
         events: list[dict[str, Any]] = json_data.get('events', [])
 
@@ -23,7 +23,7 @@ class TransformUtils:
             e.get('season', {}).get('year') == self.context.season_year
         ]
 
-        if self.context.is_bulk_upload:
+        if is_bulk_upload:
             # Multiple completed weeks within specified range
             week_events: list[dict[str, Any]]  = [
                 e for e in season_completed_games if self.context.start_week <= e.get('week', {}).get('number') <= self.context.end_week
@@ -36,7 +36,7 @@ class TransformUtils:
         return week_events
 
 
-    # Filter for most recent completed week of games
+    # Filter any completed week - used to filter for most recent completed week
     def filter_season_week(self, events: list[dict[str, Any]], season_week: int) -> list[dict[str, Any]]:
         if events is None:
             return []
@@ -49,7 +49,6 @@ class TransformUtils:
         return filtered_week 
 
 
-    # Filter for all completed week of games
     def filter_season_weeks_range(self, events: list[dict[str, Any]], start_week: int, end_week: int) -> list[dict[str, Any]]:
         if events is None:
             return []

@@ -1,3 +1,3 @@
-from .context.pipeline_context import PipelineContext
+from .pipeline_runner import PipelineRunner
 
-__all__ = ['Pipelinecontext']
+__all__ = ['PipelineRunner']

@@ -3,7 +3,7 @@ from pathlib import Path
 
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
-RAW_DATA_DIR = ROOT_DIR / 'data' / 'raw'
+RAW_DATA_DIR = ROOT_DIR / 'data' / 'cleaned'
 RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 # Export week's data
