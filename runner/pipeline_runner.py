@@ -1,4 +1,3 @@
-# from etl.extract.extract import extract_and_save, get_json
 from etl.extract.extract import get_json
 from runner.context.pipeline_context import PipelineContext
 from etl.transform.transform_utils import TransformUtils

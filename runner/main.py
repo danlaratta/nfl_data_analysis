@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from typing import Any
 import pandas as pd
 from runner.pipeline_runner import PipelineRunner
-from .context.pipeline_context import PipelineContext
+from runner.context.pipeline_context import PipelineContext
 from etl.transform.transform_utils import TransformUtils  
 from etl.extract.api.api_service import ApiService 
 

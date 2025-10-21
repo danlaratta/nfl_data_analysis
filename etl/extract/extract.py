@@ -1,4 +1,4 @@
-from .api.api_service import ApiService
+from etl.extract.api.api_service import ApiService
 from pathlib import Path
 import json
 from typing import Any

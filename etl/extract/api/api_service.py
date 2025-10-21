@@ -1,6 +1,6 @@
 import requests
 import os
-from .exception import ApiRequestException
+from etl.extract.api.exception.api_request_exception import ApiRequestException
 from typing import Any
 
 
