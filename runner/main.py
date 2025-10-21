@@ -35,13 +35,14 @@ def main():
 
     data: dict[str, Any] = range_runner.run_extract_data()
     transformed: dict[str, pd.DataFrame] = range_runner.run_transform_data(data)
-    df = pd.DataFrame(transformed['games'])
+    # df = pd.DataFrame(transformed['games'])
     # df = pd.DataFrame(transformed['leaders'])
     # df = pd.DataFrame(transformed['players'])
     # df = pd.DataFrame(transformed['stadium'])
     # df = pd.DataFrame(transformed['teams'])
-    # df = pd.DataFrame(transformed['stats'])
-    print(df.head())
+    df = pd.DataFrame(transformed['stats'])
+    print(df.head(50))
+    # print(df.count())
 
 if __name__ == '__main__':
     main()

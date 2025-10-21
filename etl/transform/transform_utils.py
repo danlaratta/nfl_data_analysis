@@ -36,14 +36,14 @@ class TransformUtils:
         return week_events
 
 
-    # Filter any completed week - used to filter for most recent completed week
+    # Filter any completed week in regular season (type = 2) - used to filter for most recent completed week
     def filter_season_week(self, events: list[dict[str, Any]], season_week: int) -> list[dict[str, Any]]:
         if events is None:
             return []
 
         # Filter for most recent completed week
         filtered_week: list[dict[str, Any]] = [
-            e for e in events if e.get('week', {}).get('number', 0) == season_week
+            e for e in events if e.get('season', {}).get('type') == 2 and e.get('week', {}).get('number', 0) == season_week
         ]
 
         return filtered_week 
@@ -55,7 +55,7 @@ class TransformUtils:
         
         # Filter for weeks within range
         filtered_weeks: list[dict[str, Any]] = [ 
-            e for e in events if start_week <= e.get('week', {}).get('number', 0) <= end_week
+            e for e in events if e.get('season', {}).get('type') == 2 and start_week <= e.get('week', {}).get('number', 0) <= end_week
         ]
         
         return filtered_weeks
