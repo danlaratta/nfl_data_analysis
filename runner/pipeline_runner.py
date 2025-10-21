@@ -1,10 +1,12 @@
-from etl.extract.extract import extract_and_save, get_json
+# from etl.extract.extract import extract_and_save, get_json
+from etl.extract.extract import get_json
 from runner.context.pipeline_context import PipelineContext
 from etl.transform.transform_utils import TransformUtils
 from etl.transform.transform import transform_game_leaders, transform_games, transform_players, transform_stadium, transform_teams, transform_team_game_stats
 from etl.clean.clean import clean_game_leaders, clean_games, clean_players, clean_stadium, clean_teams, clean_team_game_stats
 from typing import Any
 import pandas as pd
+
 
 class PipelineRunner():
     def __init__(self, context: PipelineContext, utils: TransformUtils) -> None:
@@ -21,7 +23,7 @@ class PipelineRunner():
 
     # Extract
     def run_extract_data(self) -> dict[str, Any]:
-        extract_and_save(self.context.service, self.context.season_year)
+        # extract_and_save(self.context.service, self.context.season_year)
         json = get_json(self.context.season_year)
         return json
 
@@ -83,7 +85,6 @@ class PipelineRunner():
         }
 
         return cleaned_dfs
-
 
 
     # Load
