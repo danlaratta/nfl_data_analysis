@@ -16,7 +16,7 @@ class PipelineRunner():
     def run_pipeline(self) -> None:
         nfl_data: dict[str, Any] = self.run_extract_data()                                  # Extract
         transformed_dfs: dict[str, pd.DataFrame] = self.run_transform_data(nfl_data)        # Transform
-        cleaned_dfs: dict[str, pd.DataFrame] = self.run_clean_data(transformed_dfs)         # Clean
+        # cleaned_dfs: dict[str, pd.DataFrame] = self.run_clean_data(transformed_dfs)         # Clean
         # self.run_load_data()                                          # Load
 
 
@@ -31,7 +31,6 @@ class PipelineRunner():
     def run_transform_data(self, data: dict[str, Any]) -> dict[str, pd.DataFrame]:
         season_games_data: list[dict[str, Any]] = self.utils.filter_season_events(data, self.context.is_bulk_upload)
         data_to_transform: list[dict[str, Any]] = []
-
 
         if self.context.is_bulk_upload:
             # Start and end weeks must be supplied for transforming range of weeks

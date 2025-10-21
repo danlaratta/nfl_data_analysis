@@ -19,7 +19,7 @@ class TransformUtils:
         # Completed weeks in season 
         season_completed_games = [
             e for e in events
-            if e.get('status', {}).get('type') == 'completed' and
+            if e.get('status', {}).get('type', {}).get('completed') is True and
             e.get('season', {}).get('year') == self.context.season_year
         ]
 
