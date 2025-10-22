@@ -1,7 +1,7 @@
 
 CREATE TABLE IF NOT EXISTS team (
     team_id             INT PRIMARY KEY,
-    stadium_id          INT REFERENCES stadium(stadium_id)
+    stadium_id          INT REFERENCES stadium(stadium_id),
     team_name           TEXT NOT NULL,
     abbreviation        VARCHAR(5) NOT NULL,
     city                TEXT NOT NULL,

@@ -1,19 +1,38 @@
 import pandas as pd
 
 
-def clean_teams(df: pd.DataFrame) -> pd.DataFrame:
-    # Copy dataframe
-    team_df: pd.DataFrame = df.copy()
+def clean_teams(df: pd.DataFrame) -> pd.DataFrame: 
+    # Copy dataframe 
+    team_df: pd.DataFrame = df.copy() 
+    
+    # Fix incorrect Team IDs 
+    team_df['team_id'] = team_df['team_id'].replace({33: 31, 34: 32}) # Raven's ID: 33 --> 31 | Texan's ID: 34 --> 32 
 
-    # Fix incorrect Team IDs
-    team_df['team_id'] = team_df['team_id'].replace({33: 31, 34: 32})     # Raven's ID: 33 --> 31 | Texan's ID: 34 --> 32
+    # Sort and drop duplicates
+    team_df = team_df.drop_duplicates(subset='team_name', keep='last').sort_values(by='team_name').reset_index(drop=True)
 
-    # Fill away team stadium_ids with 0 
-    team_df.loc[team_df['stadium_id'].isna(), 'stadium_id'] = 0
-    team_df['stadium_id'] = team_df['stadium_id'].astype(int)
+    return team_df
 
-    # Sort and return
-    return team_df.sort_values(by='team_name').reset_index(drop=True)
+
+# def clean_teams_range(transformed_team: pd.DataFrame, end_week: int) -> pd.DataFrame:
+#     team_df = transformed_team.copy()
+
+#     # Fix incorrect team IDs in both DataFrames
+#     team_df['team_id'] = team_df['team_id'].replace({33: 31, 34: 32})
+
+#     # Merge these into team_df
+#     team_df = team_df.set_index('team_id')
+#     team_df['home_wins'] = home_wins
+#     team_df['away_wins'] = away_wins
+#     team_df = team_df.fillna(0).astype({'home_wins': int, 'away_wins': int})
+
+#     # Compute overall record
+#     team_df['overall_record'] = team_df['home_wins'].astype(str) + '-' + team_df['away_wins'].astype(str)
+
+#     team_df = team_df.sort_values(by=['team_name'], ascending=True)
+#     team_df = team_df.drop_duplicates(subset=['team_name']).reset_index(drop=True)
+
+#     return team_df
 
 
 def clean_games(df: pd.DataFrame) -> pd.DataFrame:

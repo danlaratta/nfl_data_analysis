@@ -70,8 +70,8 @@ class PipelineRunner():
         cleaned_games_df: pd.DataFrame = clean_games(transformed_dfs['games'])
         cleaned_players_df: pd.DataFrame = clean_players(transformed_dfs['players'])
         cleaned_stadium_df: pd.DataFrame = clean_stadium(transformed_dfs['stadium'])
-        cleaned_teams_df: pd.DataFrame = clean_teams(transformed_dfs['teams'])
         cleaned_stats_df: pd.DataFrame = clean_team_game_stats(transformed_dfs['stats'])
+        cleaned_teams_df: pd.DataFrame = clean_teams(transformed_dfs['teams'])
         
         cleaned_dfs: dict[str, pd.DataFrame ] = {
             'leaders': cleaned_leaders_df,

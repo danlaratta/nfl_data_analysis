@@ -28,18 +28,14 @@ def transform_teams(events: list[dict[str, Any]], is_bulk_transform: bool) -> pd
                 # Create the rows for team data where each row represents a team
                 team_row: dict[str, Any] = {
                     'team_id': int(team.get('id')),
+                    'stadiun_id': stadium_id,
                     'team_name': str(team.get('displayName')),
                     'abbreviation': str(team.get('abbreviation')),
                     'city': str(team.get('location')),
-                    'home_or_away': str(competitor.get('homeAway', '').title()),
                     'home_wins': home_wins,
                     'away_wins': away_wins,
                     'overall_record': overall_record
                 }
-
-                # Assign stadium_id for the home team
-                if team_row['home_or_away'] == 'Home' and stadium_id:
-                    team_row['stadium_id'] = stadium_id
 
                 teams_data.append(team_row)
     
