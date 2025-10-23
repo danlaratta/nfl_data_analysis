@@ -35,12 +35,12 @@ class PipelineRunner():
         if self.context.is_bulk_upload:
             # Start and end weeks must be supplied for transforming range of weeks
             if self.context.start_week is None or self.context.end_week is None:
-                raise ValueError('Start or end week is missing or incorrect value')
+                raise ValueError('Start or end week is missing or provided a week that has yet to be completed.')
             data_to_transform = self.utils.filter_season_weeks_range(season_games_data, self.context.start_week, self.context.end_week)
         else:
             # Just end week must be supplied for transforming range of weeks
             if self.context.end_week is None:
-                raise ValueError('End week is missing or incorrect value')
+                raise ValueError('End week is missing or provided a week that has yet to be completed.')
             
             data_to_transform = self.utils.filter_season_week(season_games_data, self.context.end_week)
 

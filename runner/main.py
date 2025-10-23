@@ -41,10 +41,10 @@ def main():
     # df = pd.DataFrame(cleaned['leaders'])
     # df = pd.DataFrame(cleaned['players'])
     # df = pd.DataFrame(cleaned['stadium'])
-    df = pd.DataFrame(cleaned['teams'])
-    # df = pd.DataFrame(cleaned['stats'])
+    # df = pd.DataFrame(cleaned['teams'])
+    df = pd.DataFrame(cleaned['stats'])
 
-    print(df.sort_values(by='team_name').head(50))
+    print(df.head(50))
 
 if __name__ == '__main__':
     main()

@@ -11,7 +11,7 @@ class TransformUtils:
         self.RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
-    # Filter for current season's weekly data
+    # Filter for whole season's completed weeks data
     def filter_season_events(self, json_data: dict[str, Any], is_bulk_upload: bool) -> list[dict[str, Any]]:
         # Get all events (games)
         events: list[dict[str, Any]] = json_data.get('events', [])
@@ -43,7 +43,9 @@ class TransformUtils:
 
         # Filter for most recent completed week
         filtered_week: list[dict[str, Any]] = [
-            e for e in events if e.get('season', {}).get('type') == 2 and e.get('week', {}).get('number', 0) == season_week
+            e for e in events 
+            if e.get('status', {}).get('type', {}).get('completed') is True and 
+            e.get('season', {}).get('type') == 2 and e.get('week', {}).get('number', 0) == season_week
         ]
 
         return filtered_week 
@@ -55,7 +57,9 @@ class TransformUtils:
         
         # Filter for weeks within range
         filtered_weeks: list[dict[str, Any]] = [ 
-            e for e in events if e.get('season', {}).get('type') == 2 and start_week <= e.get('week', {}).get('number', 0) <= end_week
+            e for e in events 
+            if e.get('status', {}).get('type', {}).get('completed') is True and
+            e.get('season', {}).get('type') == 2 and start_week <= e.get('week', {}).get('number', 0) <= end_week
         ]
         
         return filtered_weeks

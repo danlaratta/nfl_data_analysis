@@ -14,27 +14,6 @@ def clean_teams(df: pd.DataFrame) -> pd.DataFrame:
     return team_df
 
 
-# def clean_teams_range(transformed_team: pd.DataFrame, end_week: int) -> pd.DataFrame:
-#     team_df = transformed_team.copy()
-
-#     # Fix incorrect team IDs in both DataFrames
-#     team_df['team_id'] = team_df['team_id'].replace({33: 31, 34: 32})
-
-#     # Merge these into team_df
-#     team_df = team_df.set_index('team_id')
-#     team_df['home_wins'] = home_wins
-#     team_df['away_wins'] = away_wins
-#     team_df = team_df.fillna(0).astype({'home_wins': int, 'away_wins': int})
-
-#     # Compute overall record
-#     team_df['overall_record'] = team_df['home_wins'].astype(str) + '-' + team_df['away_wins'].astype(str)
-
-#     team_df = team_df.sort_values(by=['team_name'], ascending=True)
-#     team_df = team_df.drop_duplicates(subset=['team_name']).reset_index(drop=True)
-
-#     return team_df
-
-
 def clean_games(df: pd.DataFrame) -> pd.DataFrame:
     games_df = df.copy()
     return games_df.sort_values(by=['season_week', 'game_id']).reset_index(drop=True)
