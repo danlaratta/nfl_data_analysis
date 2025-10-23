@@ -3,6 +3,8 @@ from runner.context.pipeline_context import PipelineContext
 from etl.transform.transform_utils import TransformUtils
 from etl.transform.transform import transform_game_leaders, transform_games, transform_players, transform_stadium, transform_teams, transform_team_game_stats
 from etl.clean.clean import clean_game_leaders, clean_games, clean_players, clean_stadium, clean_teams, clean_team_game_stats
+# from etl.clean.export import bulk_export_week_data
+from etl.load.load import load_to_postgres
 from typing import Any
 import pandas as pd
 
@@ -16,8 +18,9 @@ class PipelineRunner():
     def run_pipeline(self) -> None:
         nfl_data: dict[str, Any] = self.run_extract_data()                                  # Extract
         transformed_dfs: dict[str, pd.DataFrame] = self.run_transform_data(nfl_data)        # Transform
-        # cleaned_dfs: dict[str, pd.DataFrame] = self.run_clean_data(transformed_dfs)         # Clean
-        # self.run_load_data()                                          # Load
+        cleaned_dfs: dict[str, pd.DataFrame] = self.run_clean_data(transformed_dfs)         # Clean
+        # bulk_export_week_data(cleaned_dfs)                                                  # Export cleaned data
+        self.run_load_data(cleaned_dfs)                                                     # Load
 
 
     # Extract
@@ -86,8 +89,6 @@ class PipelineRunner():
 
 
     # Load
-    def run_load_data(self) -> None:
-        pass
-
-
+    def run_load_data(self, cleaned_dfs: dict[str, pd.DataFrame]) -> None:
+        load_to_postgres(cleaned_dfs)
 

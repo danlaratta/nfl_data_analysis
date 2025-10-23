@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 import pandas as pd
-from db_config import DB_URL
+from database.db_config import DB_URL
 from typing import Literal
 
 # Create engine to connect to database and return it

@@ -1,13 +1,12 @@
+# Load environment vars - must be loaded before all other imports that use the vars
 from dotenv import load_dotenv
-from typing import Any
-import pandas as pd
-from runner.pipeline_runner import PipelineRunner
-from runner.context.pipeline_context import PipelineContext
-from etl.transform.transform_utils import TransformUtils  
-from etl.extract.api.api_service import ApiService 
-
-# Load environment variables
 load_dotenv()
+from runner.pipeline_runner import PipelineRunner                   # noqa: E402  This silences the meaningless warnings
+from runner.context.pipeline_context import PipelineContext         # noqa: E402
+from etl.transform.transform_utils import TransformUtils            # noqa: E402
+from etl.extract.api.api_service import ApiService                  # noqa: E402
+
+
 
 # Pipeline Runner
 def main():
@@ -17,34 +16,15 @@ def main():
     # week_context: PipelineContext = PipelineContext(2025, False, service, None, 1)
     # week_utils: TransformUtils = TransformUtils(week_context)
     # week_runner: PipelineRunner = PipelineRunner(week_context, week_utils)
+    # week_runner.run_pipeline()
 
-    # data: dict[str, Any] = week_runner.run_extract_data()
-    # transformed: dict[str, pd.DataFrame] = week_runner.run_transform_data(data)
-    # cleaned: dict[str, pd.DataFrame] = week_runner.run_clean_data(transformed)
-    # df = pd.DataFrame(cleaned['games'])
-    # df = pd.DataFrame(cleaned['leaders'])
-    # df = pd.DataFrame(cleaned['players'])
-    # df = pd.DataFrame(cleaned['stadium'])
-    # df = pd.DataFrame(cleaned['teams'])
-    # df = pd.DataFrame(cleaned['stats'])
 
     # Week Range
-    range_context: PipelineContext = PipelineContext(2025, True, service, 1, 6)
+    range_context: PipelineContext = PipelineContext(2025, True, service, 1, 7)
     range_utils: TransformUtils = TransformUtils(range_context)
     range_runner: PipelineRunner = PipelineRunner(range_context, range_utils)
+    range_runner.run_pipeline()
 
-    data: dict[str, Any] = range_runner.run_extract_data()
-    transformed: dict[str, pd.DataFrame] = range_runner.run_transform_data(data)
-    cleaned: dict[str, pd.DataFrame] = range_runner.run_clean_data(transformed)
-
-    # df = pd.DataFrame(cleaned['games'])
-    # df = pd.DataFrame(cleaned['leaders'])
-    # df = pd.DataFrame(cleaned['players'])
-    # df = pd.DataFrame(cleaned['stadium'])
-    # df = pd.DataFrame(cleaned['teams'])
-    df = pd.DataFrame(cleaned['stats'])
-
-    print(df.head(50))
 
 if __name__ == '__main__':
     main()
