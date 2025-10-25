@@ -16,7 +16,8 @@ def clean_teams(df: pd.DataFrame) -> pd.DataFrame:
 
 def clean_games(df: pd.DataFrame) -> pd.DataFrame:
     games_df = df.copy()
-    games_df['team_id'] = games_df['team_id'].replace({33: 31, 34: 32})
+    games_df['home_team_id'] = games_df['home_team_id'].replace({33: 31, 34: 32})
+    games_df['away_team_id'] = games_df['away_team_id'].replace({33: 31, 34: 32})
     return games_df.sort_values(by=['season_week', 'game_id']).reset_index(drop=True)
 
 
