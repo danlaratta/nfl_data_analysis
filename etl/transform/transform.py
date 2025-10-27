@@ -28,7 +28,7 @@ def transform_teams(events: list[dict[str, Any]], is_bulk_transform: bool) -> pd
                 # Create the rows for team data where each row represents a team
                 team_row: dict[str, Any] = {
                     'team_id': int(team.get('id')),
-                    'stadiun_id': stadium_id,
+                    'stadium_id': stadium_id,
                     'team_name': str(team.get('displayName')),
                     'abbreviation': str(team.get('abbreviation')),
                     'city': str(team.get('location')),
